@@ -11,7 +11,7 @@ import { UserController, PostController } from "./controllers/index.js";
 import cors from "cors";
 
 mongoose
-  .connect("mongodb+srv://ihorwave:090693@cluster0.4ipem7o.mongodb.net/blog")
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("DB ok");
   })
@@ -93,7 +93,7 @@ app.delete("/comments/:id", checkAuth, PostController.deleteComment);
 
 app.post("/postByComment", PostController.getPostByCommentId);
 
-app.listen(4444, (err) => {
+app.listen(process.env.PORT || 4444, (err) => {
   if (err) {
     return console.log(err);
   }
