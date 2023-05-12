@@ -1,5 +1,11 @@
 import PostModel from "../models/Post.js";
 import fs from "fs";
+import aws from "aws-sdk";
+import dotenv from "dotenv";
+import { promisify } from "util";
+import crypto from "crypto";
+
+dotenv.config();
 
 export const getAll = async (req, res) => {
   try {
@@ -45,7 +51,6 @@ export const getTags = async (req, res) => {
     const posts = await PostModel.find().exec();
 
     const tags = posts.map((obj) => obj.tags.flat());
-
 
     res.json(tags);
   } catch (err) {
@@ -223,6 +228,40 @@ export const getPostByCommentId = async (req, res) => {
     console.log(err);
     return res.status(500).json({
       message: "Failed to get post",
+    });
+  }
+};
+
+export const generateImageUploadURL = async (req, res) => {
+  try {
+    const region = "eu-central-1";
+    const bucketName = "wvjkeblogbucket";
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+    const s3 = new aws.S3({
+      region,
+      accessKeyId,
+      secretAccessKey,
+      signatureVersion: "v4",
+    });
+
+    const randomBytes = promisify(crypto.randomBytes);
+    const rawBytes = await randomBytes(16);
+    const imageName = rawBytes.toString("hex");
+
+    const params = {
+      Bucket: bucketName,
+      Key: imageName,
+      Expires: 60,
+    };
+
+    const uploadURL = await s3.getSignedUrlPromise("putObject", params);
+    res.json({ uploadURL });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Failed to get imageUploadURl",
     });
   }
 };
