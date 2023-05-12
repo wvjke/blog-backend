@@ -6,4 +6,4 @@
 * MongoDB
 * JSON Web Token
 * BCrypt
-* Multer
+* Amazon S3
